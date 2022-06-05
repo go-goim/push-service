@@ -1,13 +1,14 @@
-package main
+package cmd
 
 import (
 	"context"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	messagev1 "github.com/go-goim/api/message/v1"
-
 	"github.com/go-goim/core/pkg/cmd"
 	"github.com/go-goim/core/pkg/graceful"
 	"github.com/go-goim/core/pkg/log"
@@ -16,6 +17,10 @@ import (
 	"github.com/go-goim/push-service/internal/app"
 	"github.com/go-goim/push-service/internal/router"
 	"github.com/go-goim/push-service/internal/service"
+
+	_ "github.com/swaggo/swag"
+
+	_ "github.com/go-goim/push-service/docs"
 )
 
 var (
@@ -30,7 +35,7 @@ func init() {
 	cmd.GlobalFlagSet.StringVar(&agentID, "agent-id", agentID, "agent id")
 }
 
-func main() {
+func Main() {
 	if err := cmd.ParseFlags(); err != nil {
 		panic(err)
 	}
@@ -55,8 +60,10 @@ func main() {
 	// register router
 	g := gin.New()
 	g.Use(gin.Recovery(), mid.Logger)
-	router.RegisterRouter(g.Group("/push/service"))
+	router.RegisterRouter(g.Group("/push"))
 	application.HTTPSrv.HandlePrefix("/", g)
+	// register swagger
+	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	if err = application.Run(); err != nil {
 		log.Fatal("application run got error", "error", err)

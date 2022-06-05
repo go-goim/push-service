@@ -1,0 +1,64 @@
+basePath: /push/v1
+definitions:
+  response.Meta:
+    properties:
+      extra:
+        additionalProperties:
+          type: string
+        type: object
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/response.Meta'
+      reason:
+        type: string
+    type: object
+info:
+  contact:
+    email: yusankurban@gmail.com
+    name: Yusank
+    url: https://yusank.space
+  description: GoIM.Push.Service 服务器接口文档
+  license:
+    name: MIT
+    url: https://github.com/go-goim/core/blob/main/LICENSE
+  termsOfService: http://go-goim.github.io/
+  title: GoIM.Push.Service Swagger
+  version: "1.0"
+paths:
+  /push/v1/conn/ws:
+    get:
+      consumes:
+      - application/json
+      description: websocket 长连接
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: invalid request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: invalid jwt cookie
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: websocket
+      tags:
+      - Conn
+swagger: "2.0"

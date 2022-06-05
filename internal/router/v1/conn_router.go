@@ -36,6 +36,15 @@ func (r *ConnRouter) Load(g *gin.RouterGroup) {
 	g.GET("/ws", mid.AuthJwtCookie, r.wsHandler)
 }
 
+// @Summary websocket
+// @Description websocket 长连接
+// @Tags Conn
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "success"
+// @Failure 401 {object} response.Response "invalid jwt cookie"
+// @Failure 400 {object} response.Response "invalid request"
+// @Router /push/v1/conn/ws [get]
 func (r *ConnRouter) wsHandler(c *gin.Context) {
 	// todo use check uid/token middleware before this handler
 	uid := c.GetHeader("uid")
