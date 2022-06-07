@@ -26,6 +26,7 @@ func NewConnRouter() *ConnRouter {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 			CheckOrigin: func(r *http.Request) bool {
+				// todo use check uid/token middleware before this handler
 				return true
 			},
 		},
@@ -50,6 +51,11 @@ func (r *ConnRouter) wsHandler(c *gin.Context) {
 	uid := c.GetHeader("uid")
 	if uid == "" {
 		response.ErrorRespWithStatus(c, http.StatusUnauthorized, fmt.Errorf("invalid uid"))
+		return
+	}
+
+	if !r.upgrader.CheckOrigin(c.Request) {
+		response.ErrorRespWithStatus(c, http.StatusForbidden, fmt.Errorf("invalid origin"))
 		return
 	}
 
