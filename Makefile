@@ -15,10 +15,10 @@ export ROCKETMQ_GO_LOG_LEVEL=warn
 export JWT_SECRET="goim"
 
 ## enable config center
-export ENABLE_CONFIG_CENTER=false
+export ENABLE_CONFIG_CENTER=true
 
 ## use host ip
-export USE_HOST_IP=false
+export USE_HOST_IP=true
 
 ##################################################
 # Development                                    #

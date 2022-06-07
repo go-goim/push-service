@@ -9,4 +9,4 @@ configCenter:
   format: yaml # yaml, json
   paths:
     - common
-    - push
+    - goim.service.push

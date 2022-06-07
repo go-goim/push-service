@@ -1,4 +1,4 @@
-name: service.goim.push
+name: goim.service.push
 version: v0.0.0
 http:
   scheme: http

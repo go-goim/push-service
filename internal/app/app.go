@@ -1,28 +1,31 @@
 package app
 
 import (
+	"fmt"
+	"net"
+
 	"github.com/go-goim/core/pkg/app"
 )
 
 type Application struct {
 	*app.Application
-	agentID string
 }
 
 var (
 	application *Application
 )
 
-func InitApplication(agentID string) (*Application, error) {
+func InitApplication() (*Application, error) {
 	// do some own biz logic if needed
-	application = &Application{agentID: agentID}
-
-	a, err := app.InitApplication(app.WithMetadata("agentID", agentID))
+	a, err := app.InitApplication()
 	if err != nil {
 		return nil, err
 	}
 
-	application.Application = a
+	application = &Application{
+		Application: a,
+	}
+
 	return application, nil
 }
 
@@ -30,6 +33,6 @@ func GetApplication() *Application {
 	return application
 }
 
-func GetAgentID() string {
-	return application.agentID
+func GetAgentIP() string {
+	return net.JoinHostPort(application.GetHost(), fmt.Sprintf("%d", application.Config.SrvConfig.Http.Port))
 }

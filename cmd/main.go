@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -18,21 +17,17 @@ import (
 	"github.com/go-goim/push-service/internal/router"
 	"github.com/go-goim/push-service/internal/service"
 
-	_ "github.com/swaggo/swag"
+	_ "github.com/swaggo/swag" // use for swagger doc
 
-	_ "github.com/go-goim/push-service/docs"
+	_ "github.com/go-goim/push-service/docs" // use for swagger doc
 )
 
 var (
 	jwtSecret string
-	agentID   string // use hostname as agentID in default.
 )
 
 func init() {
-	agentID, _ = os.Hostname()
-	log.Debug("agent id", "agentID", agentID)
 	cmd.GlobalFlagSet.StringVar(&jwtSecret, "jwt-secret", "", "jwt secret")
-	cmd.GlobalFlagSet.StringVar(&agentID, "agent-id", agentID, "agent id")
 }
 
 func Main() {
@@ -45,11 +40,7 @@ func Main() {
 	}
 	mid.SetJwtHmacSecret(jwtSecret)
 
-	if agentID == "" {
-		panic("agent id is empty")
-	}
-
-	application, err := app.InitApplication(agentID)
+	application, err := app.InitApplication()
 	if err != nil {
 		log.Fatal("initApplication got err", "error", err)
 	}

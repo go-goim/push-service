@@ -19,7 +19,7 @@ func HandleWsConn(ctx context.Context, c *websocket.Conn, uid string) {
 	ww := wrapper.WrapWs(ctx, c, uid)
 	ww.AddPingAction(func() error {
 		return app.GetApplication().Redis.SetEX(context.Background(),
-			consts.GetUserOnlineAgentKey(uid), app.GetAgentID(), consts.UserOnlineAgentKeyExpire).Err()
+			consts.GetUserOnlineAgentKey(uid), app.GetAgentIP(), consts.UserOnlineAgentKeyExpire).Err()
 	})
 	ww.AddCloseAction(func() error {
 		ctx2, cancel := context.WithTimeout(ctx, time.Second)
@@ -33,7 +33,7 @@ func HandleWsConn(ctx context.Context, c *websocket.Conn, uid string) {
 
 	ctx2, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	err := app.GetApplication().Redis.Set(ctx2, consts.GetUserOnlineAgentKey(uid), app.GetAgentID(), consts.UserOnlineAgentKeyExpire).Err()
+	err := app.GetApplication().Redis.Set(ctx2, consts.GetUserOnlineAgentKey(uid), app.GetAgentIP(), consts.UserOnlineAgentKeyExpire).Err()
 	if err != nil {
 		log.Error("redis set error", "key", consts.GetUserOnlineAgentKey(uid), "error", err)
 	}
