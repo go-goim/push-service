@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.8.0
-	github.com/go-goim/api v0.0.1
+	github.com/go-goim/api v0.0.2
 	github.com/go-goim/core v0.0.3
 	github.com/gorilla/websocket v1.5.0
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2

@@ -5,15 +5,11 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/gorilla/websocket"
-
 	responsepb "github.com/go-goim/api/transport/response"
 
 	"github.com/go-goim/core/pkg/log"
 
 	messagev1 "github.com/go-goim/api/message/v1"
-
-	"github.com/go-goim/core/pkg/conn/wrapper"
 
 	"github.com/go-goim/core/pkg/conn/ws"
 	"github.com/go-goim/core/pkg/graceful"
@@ -56,7 +52,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 		return
 	}
 
-	err1 := PushMessage(c.(*wrapper.WebsocketWrapper), req)
+	err1 := PushMessage(c, req)
 	if err1 == nil {
 		return
 	}
@@ -70,17 +66,11 @@ func (p *PushMessager) handleBroadcastAsync(ctx context.Context, req *messagev1.
 	ch := ws.LoadAllConn()
 	wf := func() error {
 		for c := range ch {
-			select {
-			case <-c.Done():
+			if c.Err() != nil {
 				continue
-			default:
-				if c.Err() != nil {
-					continue
-				}
 			}
 
-			ww := c.(*wrapper.WebsocketWrapper)
-			if err := PushMessage(ww, req); err != nil {
+			if err := PushMessage(c, req); err != nil {
 				log.Info("PushMessage err=", err)
 			}
 		}
@@ -95,7 +85,7 @@ func (p *PushMessager) handleBroadcastAsync(ctx context.Context, req *messagev1.
 	}
 }
 
-func PushMessage(ww *wrapper.WebsocketWrapper, req *messagev1.PushMessageReq) error {
+func PushMessage(wc *ws.WebsocketConn, req *messagev1.PushMessageReq) error {
 	brief := &messagev1.BriefMessage{
 		FromUser:    req.GetFromUser(),
 		ToUser:      req.GetToUser(),
@@ -109,5 +99,5 @@ func PushMessage(ww *wrapper.WebsocketWrapper, req *messagev1.PushMessageReq) er
 		return err
 	}
 
-	return ww.WriteMessage(websocket.TextMessage, b)
+	return wc.Write(b)
 }
