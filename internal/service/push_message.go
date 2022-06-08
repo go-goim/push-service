@@ -13,8 +13,9 @@ import (
 
 	messagev1 "github.com/go-goim/api/message/v1"
 
-	"github.com/go-goim/core/pkg/conn/pool"
 	"github.com/go-goim/core/pkg/conn/wrapper"
+
+	"github.com/go-goim/core/pkg/conn/ws"
 	"github.com/go-goim/core/pkg/graceful"
 	"github.com/go-goim/core/pkg/worker"
 )
@@ -48,7 +49,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 		return
 	}
 
-	c := pool.Get(req.GetToUser())
+	c := ws.Get(req.GetToUser())
 	if c == nil {
 		log.Info("PUSH| user conn not found=", req.GetToUser())
 		resp = responsepb.Code_UserNotOnline.BaseResponse()
@@ -66,7 +67,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 }
 
 func (p *PushMessager) handleBroadcastAsync(ctx context.Context, req *messagev1.PushMessageReq) {
-	ch := pool.LoadAllConn()
+	ch := ws.LoadAllConn()
 	wf := func() error {
 		for c := range ch {
 			select {
