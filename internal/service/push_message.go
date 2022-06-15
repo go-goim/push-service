@@ -37,7 +37,7 @@ func GetPushMessager() *PushMessager {
 }
 
 func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessageReq) (resp *responsepb.BaseResponse, err error) {
-	log.Info("PUSH receive msg|", req.String())
+	log.Info("receive msg", "content", req.String())
 	resp = responsepb.Code_OK.BaseResponse()
 	if req.GetPushMessageType() == messagev1.PushMessageType_Broadcast {
 		// cannot use request ctx in async function.It may kill the goroutine after this request finished.
