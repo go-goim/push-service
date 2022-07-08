@@ -4,17 +4,12 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.8.1
-	github.com/go-goim/api v0.0.4
-	github.com/go-goim/core v0.0.3
+	github.com/go-goim/api v0.0.5
+	github.com/go-goim/core v0.0.5
 	github.com/gorilla/websocket v1.5.0
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.4.3
 	github.com/swaggo/swag v1.8.2
-)
-
-replace (
-	github.com/go-goim/api => ../api
-	github.com/go-goim/core => ../core
 )
 
 require (
