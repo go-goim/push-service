@@ -17,7 +17,7 @@ import (
 )
 
 type PushMessager struct {
-	messagev1.UnimplementedPushMessagerServer
+	messagev1.UnimplementedPushMessageServiceServer
 	workerPool *worker.Pool
 }
 
@@ -36,29 +36,33 @@ func GetPushMessager() *PushMessager {
 	return pm
 }
 
-func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessageReq) (resp *responsepb.BaseResponse, err error) {
+func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessageReq) (resp *messagev1.PushMessageResp, err error) {
 	log.Info("receive msg", "content", req.String())
-	resp = responsepb.Code_OK.BaseResponse()
-	if req.GetPushMessageType() == messagev1.PushMessageType_Broadcast {
+	resp = &messagev1.PushMessageResp{
+		Response: responsepb.Code_OK.BaseResponse(),
+	}
+	if len(req.GetToUsers()) == 1 && req.GetToUsers()[0] == "ALL" {
 		// cannot use request ctx in async function.It may kill the goroutine after this request finished.
 		go p.handleBroadcastAsync(context.Background(), req)
 		return
 	}
 
-	c := ws.Get(req.GetToUser())
-	if c == nil {
-		log.Info("PUSH| user conn not found=", req.GetToUser())
-		resp = responsepb.Code_UserNotOnline.BaseResponse()
-		return
+	for _, uid := range req.GetToUsers() {
+		c := ws.Get(uid)
+		if c == nil {
+			log.Info("PUSH| user conn not found", "uid", uid)
+			resp.FailedUsers = append(resp.FailedUsers, uid)
+			continue
+		}
+
+		err1 := PushMessage(c, req)
+		if err1 != nil {
+			log.Error("PUSH| push message failed", "uid", uid, "err", err1.Error())
+			resp.FailedUsers = append(resp.FailedUsers, uid)
+		}
+
 	}
 
-	err1 := PushMessage(c, req)
-	if err1 == nil {
-		return
-	}
-
-	log.Info("PUSH| push err=", err1)
-	resp = responsepb.NewBaseResponseWithError(err1)
 	return
 }
 
@@ -71,7 +75,7 @@ func (p *PushMessager) handleBroadcastAsync(ctx context.Context, req *messagev1.
 			}
 
 			if err := PushMessage(c, req); err != nil {
-				log.Info("PushMessage err=", err)
+				log.Error("PushMessage error", "err", err.Error())
 			}
 		}
 
@@ -79,22 +83,14 @@ func (p *PushMessager) handleBroadcastAsync(ctx context.Context, req *messagev1.
 	}
 
 	result := p.workerPool.Submit(ctx, wf, 5)
-	log.Info("PUSH| broadcast result=", result, "| status=", result.Status(), "| err=", result.Err())
+	log.Info("PUSH| workerPool submit", "result", result, "status=", result.Status(), "err=", result.Err())
 	if result.Status() == worker.TaskStatusQueueFull {
-		log.Info("worker queue buffer is full, should set more buffer")
+		log.Error("worker queue buffer is full, should set more buffer")
 	}
 }
 
 func PushMessage(wc *ws.WebsocketConn, req *messagev1.PushMessageReq) error {
-	brief := &messagev1.BriefMessage{
-		FromUser:    req.GetFromUser(),
-		ToUser:      req.GetToUser(),
-		ContentType: req.GetContentType(),
-		Content:     req.GetContent(),
-		MsgSeq:      req.GetMsgSeq(),
-	}
-
-	b, err := json.Marshal(brief)
+	b, err := json.Marshal(req.Message)
 	if err != nil {
 		return err
 	}
