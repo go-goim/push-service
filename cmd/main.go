@@ -46,7 +46,7 @@ func Main() {
 	}
 
 	// register grpc
-	messagev1.RegisterPushMessagerServer(application.GrpcSrv, service.GetPushMessager())
+	messagev1.RegisterPushMessageServiceServer(application.GrpcSrv, service.GetPushMessager())
 
 	// register router
 	g := gin.New()
