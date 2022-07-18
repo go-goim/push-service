@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/go-goim/core/pkg/types"
 	"time"
+
+	"github.com/go-goim/core/pkg/types"
 
 	"github.com/gorilla/websocket"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/go-goim/push-service/internal/app"
 )
 
-func HandleWsConn(ctx context.Context, c *websocket.Conn, uid *types.ID) {
+func HandleWsConn(ctx context.Context, c *websocket.Conn, uid types.ID) {
 	ww := ws.WrapWs(ctx, c, uid)
 	ww.AddPingAction(func() error {
 		return app.GetApplication().Redis.SetEX(context.Background(),
