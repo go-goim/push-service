@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"sync"
 
 	responsepb "github.com/go-goim/api/transport/response"
@@ -41,14 +42,14 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	resp = &messagev1.PushMessageResp{
 		Response: responsepb.Code_OK.BaseResponse(),
 	}
-	if len(req.GetToUsers()) == 1 && req.GetToUsers()[0] == "ALL" {
+	if len(req.GetToUsers()) == 1 && req.GetToUsers()[0] == -1 {
 		// cannot use request ctx in async function.It may kill the goroutine after this request finished.
 		go p.handleBroadcastAsync(context.Background(), req)
 		return
 	}
 
 	for _, uid := range req.GetToUsers() {
-		c := ws.Get(uid)
+		c := ws.Get(strconv.FormatInt(uid, 10))
 		if c == nil {
 			log.Info("PUSH| user conn not found", "uid", uid)
 			resp.FailedUsers = append(resp.FailedUsers, uid)
