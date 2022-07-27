@@ -31,7 +31,10 @@ func HandleWsConn(ctx context.Context, c *websocket.Conn, uid types.ID) {
 
 	ctx2, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	err := app.GetApplication().Redis.Set(ctx2, consts.GetUserOnlineAgentKey(uid.Int64()), app.GetAgentIP(), consts.UserOnlineAgentKeyExpire).Err()
+	err := app.GetApplication().Redis.Set(ctx2,
+		consts.GetUserOnlineAgentKey(uid.Int64()),
+		app.GetAgentIP(),
+		consts.UserOnlineAgentKeyExpire).Err()
 	if err != nil {
 		log.Error("redis set error", "key", consts.GetUserOnlineAgentKey(uid.Int64()), "error", err)
 	}
