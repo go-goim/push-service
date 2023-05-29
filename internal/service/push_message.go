@@ -6,8 +6,7 @@ import (
 	"strconv"
 	"sync"
 
-	responsepb "github.com/go-goim/api/transport/response"
-
+	"github.com/go-goim/api/errors"
 	"github.com/go-goim/core/pkg/log"
 
 	messagev1 "github.com/go-goim/api/message/v1"
@@ -40,7 +39,7 @@ func GetPushMessager() *PushMessager {
 func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessageReq) (resp *messagev1.PushMessageResp, err error) {
 	log.Info("receive msg", "content", req.String())
 	resp = &messagev1.PushMessageResp{
-		Response: responsepb.Code_OK.BaseResponse(),
+		Error: errors.ErrorOK(),
 	}
 	if len(req.GetToUsers()) == 1 && req.GetToUsers()[0] == -1 {
 		// cannot use request ctx in async function.It may kill the goroutine after this request finished.
